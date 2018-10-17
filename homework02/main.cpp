@@ -1,8 +1,9 @@
-#include <QCoreApplication>
+﻿#include <QCoreApplication>
 #include <QDebug>
-#include <QVector>
+#include <QList>
 #include <QTextStream>
 #include <QFile>
+#include <QTextCodec>
 
 namespace SK {
 enum SortKind{
@@ -45,20 +46,16 @@ enum SortKind{
 typedef struct{
 
 public:
-    QString number;
-    QString name;
-    QString lesson1;
-    QString lesson2;
-    QString lesson3;
-    QString lesson4;
-    QString lesson5;
-    QString lesson6;
+    QStringList stu;
 
 } studData;
 
 QDebug operator<< (QDebug d, const studData &data) {
     // 运算符重载函数，直接输出studData结构
-    d.nospace()<<data.number<<data.name<<data.lesson1<<data.lesson2<<data.lesson3<<data.lesson4<<data.lesson5<<data.lesson6;
+    for(int i=0;i<data.stu.size();i++)
+        {
+            d.nospace().noquote()<<QString(data.stu.at(i))<<"  ";
+        }
     return d;
 }
 
@@ -73,68 +70,90 @@ private:
 
 bool myCmp::operator()(const studData &d1, const studData &d2)
 {
-    bool result = false;
+    bool resultzero = false;
     quint32 sortedColumn = 0x00000001<<currentColumn;
     switch (sortedColumn) {
     case SK::col01:
-        return (d1.number)>(d2.number);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col02:
-        return (d1.name)>(d2.name);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col03:
-        return (d1.lesson1)>(d2.lesson1);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col04:
-        return (d1.lesson2)>(d2.lesson2);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col05:
-        return (d1.lesson3)>(d2.lesson3);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col06:
-        return (d1.lesson4)>(d2.lesson4);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col07:
-        return (d1.lesson5)>(d2.lesson5);break;
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     case SK::col08:
-        return (d1.lesson6)>(d2.lesson6);break;
-
+        return (d1.stu.at(currentColumn))>(d2.stu.at(currentColumn));break;
     }
-    return result;
-
+    return resultzero;
 }
+
 
 
 class ScoreSorter
 {
+private:
+    QString textFile;
+    QStringList la;
+    QList<studData> tl;
 public:
     ScoreSorter(QString dataFile);
     void readFile()
     {
-        QFile file("in.txt");
+        QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
+        QFile file(textFile);
+
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
 
+        QString titile(file.readLine());
+        studData sign;
+        la=titile.split(" ", QString::SkipEmptyParts);
+        while(!file.atEnd())
+        {
+            QString line(file.readLine());
+            sign.stu=line.split(" ",QString::SkipEmptyParts);
+            if((sign.stu).last()=="\n")sign.stu.removeLast();
+            if((sign.stu.size())==0)continue;
+            tl.append(sign);
 
-        QTextStream in(&file);
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            process_line(line);}
+         }
+         file.close();
     }
 
     void doSort()
     {
-        std::sort(dataFile.begin(),dataFile.end(),std::greater<quint8>());
+        for(int i=0;i<la.count();i++)
+            {
+                myCmp d(i);
+                std::sort(tl.begin(),tl.end(),d);
+                qDebug()<<"第"<<i+1<<"列排序，排序后为:";
+                qDebug()<<la;
+                for(int i=0;i<tl.size();i++)
+                    qDebug()<<tl.at(i);
+                qDebug()<<"\n";
+
+            }
+
     }
 };
 
-// 请补全
+
+
+
 ScoreSorter::ScoreSorter(QString dataFile){
-
-
-
-
-
+    textFile=dataFile;
 }
 
 
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+/*void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    // 自定义qDebug
     QByteArray localMsg = msg.toLocal8Bit();
          switch (type) {
          case QtDebugMsg:
@@ -153,12 +172,17 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
              fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
              abort();
          }
-}
+}*/
 
 int main()
 {
-    qInstallMessageHandler(myMessageOutput);//输出调试信息
-    QString datafile = "data.txt";
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+    //QTextCodec *codec = QTextCodec::codecForName("UTF-8");
+    //QTextCodec::setCodecForTr(codec);
+    //QTextCodec::setCodecForLocale(codec);
+    //QTextCodec::setCodecForCStrings(codec);
+    //qInstallMessageHandler(myMessageOutput);//输出调试信息*/
+    QString datafile = "D:/data.txt";
 
     //如果排序后文件已存在，则删除之
     QFile f("sorted_"+datafile);

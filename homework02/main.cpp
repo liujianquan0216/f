@@ -54,7 +54,7 @@ QDebug operator<< (QDebug d, const studData &data) {
     // 运算符重载函数，直接输出studData结构
     for(int i=0;i<data.stu.size();i++)
         {
-            d.nospace().noquote()<<QString(data.stu.at(i))<<"  ";
+            d.nospace().noquote()<<QString(data.stu.at(i))<<"     ";
         }
     return d;
 }
@@ -99,14 +99,14 @@ class ScoreSorter
 {
 private:
     QString textFile;
-    QStringList la;
+    studData la;
     QList<studData> tl;
+
 public:
+    void outtxt(quint8 tx);
     ScoreSorter(QString dataFile);
     void readFile()
     {
-        QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-
         QFile file(textFile);
 
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -114,7 +114,7 @@ public:
 
         QString titile(file.readLine());
         studData sign;
-        la=titile.split(" ", QString::SkipEmptyParts);
+        la.stu=titile.split(" ", QString::SkipEmptyParts);
         while(!file.atEnd())
         {
             QString line(file.readLine());
@@ -129,22 +129,42 @@ public:
 
     void doSort()
     {
-        for(int i=0;i<la.count();i++)
+        for(int i=0;i<la.stu.size();i++)
             {
                 myCmp d(i);
                 std::sort(tl.begin(),tl.end(),d);
                 qDebug()<<"第"<<i+1<<"列排序，排序后为:";
-                qDebug()<<la;
+                qDebug().nospace().noquote()<<la;
                 for(int i=0;i<tl.size();i++)
                     qDebug()<<tl.at(i);
                 qDebug()<<"\n";
-
             }
 
     }
 };
 
+/*void ScoreSorter::outtxt(quint8 tx)
+{
+    QFile file("D:/mata.txt");
+    file.open(QIODevice::ReadWrite | QIODevice::Append);
+    QTextStream stream(&file);
+    stream.setCodec("UTF-8");
+    stream<<QString("排序后输出，当前按照第")<<tx<<QString("列排列")<<"\r\n";
+    stream<<"\t";
+    for(int i=0;i<this->la.stu.size();i++)
+        stream<<la.stu.at(i)<<"\t";
+    stream<<"\r\n";
+    for(int j=0;j<this->tl.size();j++)
+    {
+        for(int i=0;i<this->la.stu.size();i++)
+            stream<<this->tl.at(j).stu.at(i)<<"\t";
+        stream<<"\r\n";
 
+    }
+    stream<<"\n";
+    file.close();
+
+}*/
 
 
 ScoreSorter::ScoreSorter(QString dataFile){
@@ -152,9 +172,9 @@ ScoreSorter::ScoreSorter(QString dataFile){
 }
 
 
-/*void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QByteArray localMsg = msg.toLocal8Bit();
+    /*QByteArray localMsg = msg.toLocal8Bit();
          switch (type) {
          case QtDebugMsg:
              fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
@@ -171,17 +191,24 @@ ScoreSorter::ScoreSorter(QString dataFile){
          case QtFatalMsg:
              fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
              abort();
-         }
-}*/
+         }*/
+
+         Q_UNUSED(type);
+         Q_UNUSED(context);
+         QFile f("D:/t.txt");
+         f.open(QIODevice::ReadWrite | QIODevice::Append);
+         QTextStream out(&f);
+         out<<msg<<endl;
+         f.flush();
+         f.close();
+         QTextStream td(stdout);
+         td << msg;
+
+}
 
 int main()
 {
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-    //QTextCodec *codec = QTextCodec::codecForName("UTF-8");
-    //QTextCodec::setCodecForTr(codec);
-    //QTextCodec::setCodecForLocale(codec);
-    //QTextCodec::setCodecForCStrings(codec);
-    //qInstallMessageHandler(myMessageOutput);//输出调试信息*/
+    qInstallMessageHandler(myMessageOutput);
     QString datafile = "D:/data.txt";
 
     //如果排序后文件已存在，则删除之

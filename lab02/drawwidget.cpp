@@ -122,7 +122,7 @@ void DrawWidget::draw_pic()
     QString Filename;
     Filename = QFileDialog::getOpenFileName(this,
                                           tr("选择图像"),
-                                          "F:\Qthomework\lab02\pic",
+                                          "F:/Qthomework/lab02/pic",
                                           tr("Images (*.png *.bmp *.jpg)"));
 
     if(Filename.isEmpty())
